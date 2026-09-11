@@ -12,7 +12,8 @@ function hexo_resize_image()
     {
         var img = imgs[i];
 
-        var src = img.getAttribute('src').toString();
+        var src = img.getAttribute('src');
+        if (!src) continue;
 
         var fields = src.match(/(?<=\?)\d*x\d*/g);
         if (fields && fields.length == 1)
@@ -53,11 +54,8 @@ function hexo_resize_image()
 }
 window.onload = hexo_resize_image;
 
-// 获取文章内容div
-const content = document.querySelector('.post-content'); 
-
-// 查找内容里的所有img元素
-const imgs = content.querySelectorAll('img');
+// Gallery and archive pages do not have a post-content element.
+const imgs = document.querySelectorAll('.post-content img');
 
 // 遍历 img 添加 id 
 imgs.forEach(img => {
@@ -178,50 +176,30 @@ function toggleMenu() {
 
 // saveAs(Blob/File/Url,fileType)
 
-const images = document.querySelectorAll('img');
 const overlay = document.getElementById('overlay');
-const overlayImage = document.createElement('img');
+if (overlay) {
+  const overlayImage = document.createElement('img');
+  const downloadBtn = document.createElement('button');
+  downloadBtn.classList.add('download-btn');
+  downloadBtn.innerText = 'Download Image';
+  overlay.append(overlayImage, downloadBtn);
 
-
-const downloadBtn = document.createElement('button');
-images.forEach(image => {
-
-  image.addEventListener('click', () => {
-    // 复制图片到遮罩层
-    overlayImage.src = image.src;  
-    overlay.appendChild(overlayImage);
-
-    // 显示遮罩层
-    overlay.style.opacity = 0;
-    overlay.style.display = "block";
-    setTimeout(() => {
-      overlay.style.opacity = 1; 
-    }, 100);
-
-    const downloadBtn = document.createElement('button');
-    downloadBtn.classList.add('download-btn');
-    downloadBtn.innerText = 'Download Image';
-    // downloadBtn.classList.add('slidein-left');
-
-    overlay.appendChild(downloadBtn);
-    downloadBtn.addEventListener('click', () => {
-      const imageURL = overlayImage.src;
-
-      // 触发浏览器下载图片功能
-      window.open(imageURL, 'image.jpg');
-      
+  document.querySelectorAll('.post-content img, .post-head img').forEach(image => {
+    image.addEventListener('click', () => {
+      overlayImage.src = image.src;
+      overlay.style.opacity = 0;
+      overlay.style.display = 'block';
+      setTimeout(() => { overlay.style.opacity = 1; }, 100);
     });
   });
 
+  downloadBtn.addEventListener('click', event => {
+    event.stopPropagation();
+    window.open(overlayImage.src, 'image.jpg');
+  });
 
-    // 点击遮罩层关闭
-    overlay.addEventListener('click', () => {
-      overlay.style.opacity = 0;
-      setTimeout(() => {
-        overlay.style.display = "none";
-        downloadBtn.style.display = "none";
-      }, 300);
-    });
-    
-});
-
+  overlay.addEventListener('click', () => {
+    overlay.style.opacity = 0;
+    setTimeout(() => { overlay.style.display = 'none'; }, 300);
+  });
+}

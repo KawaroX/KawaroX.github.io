@@ -11,7 +11,8 @@ function hexo_resize_image()
     {
         var img = imgs[i];
 
-        var src = img.getAttribute('src').toString();
+        var src = img.getAttribute('src');
+        if (!src) continue;
 
         var fields = src.match(/(?<=\?)\d*x\d*/g);
         if (fields && fields.length == 1)
